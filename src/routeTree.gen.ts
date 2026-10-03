@@ -10,43 +10,372 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ApiPublicProbeRouteImport } from './routes/api/public/probe'
+import { Route as AppRouteImport } from './routes/app'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as McpRouteImport } from './routes/mcp'
+import { Route as SignupRouteImport } from './routes/signup'
+import { Route as AppIndexRouteImport } from './routes/app/index'
+import { Route as AppAnalyticsRouteImport } from './routes/app/analytics'
+import { Route as AppAssistantRouteImport } from './routes/app/assistant'
+import { Route as AppAutomationsRouteImport } from './routes/app/automations'
+import { Route as AppCampaignsRouteImport } from './routes/app/campaigns'
+import { Route as AppContactsRouteImport } from './routes/app/contacts'
+import { Route as AppDevelopersRouteImport } from './routes/app/developers'
+import { Route as AppDomainsRouteImport } from './routes/app/domains'
+import { Route as AppIntegrationsRouteImport } from './routes/app/integrations'
+import { Route as AppSegmentsRouteImport } from './routes/app/segments'
+import { Route as AppSettingsRouteImport } from './routes/app/settings'
+import { Route as AppTemplatesRouteImport } from './routes/app/templates'
+import { Route as AppTransactionalRouteImport } from './routes/app/transactional'
+import { Route as CTokenRouteImport } from './routes/c/$token'
+import { Route as OMessageIdDotgifRouteImport } from './routes/o/$messageId[.]gif'
+import { Route as UnsubscribeTokenRouteImport } from './routes/unsubscribe/$token'
+import { Route as ApiInternalJobsRouteImport } from './routes/api/internal/jobs'
+import { Route as ApiPublicEmailEventsRouteImport } from './routes/api/public/email-events'
+import { Route as ApiPublicEventsRouteImport } from './routes/api/public/events'
+import { Route as ApiV1SplatRouteImport } from './routes/api/v1/$'
+import { Route as AppAutomationsWorkflowIdRouteImport } from './routes/app/automations/$workflowId'
+import { Route as AppCampaignsCampaignIdRouteImport } from './routes/app/campaigns/$campaignId'
+import { Route as ApiPublicJobsTickRouteImport } from './routes/api/public/jobs/tick'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicProbeRoute = ApiPublicProbeRouteImport.update({
-  id: '/api/public/probe',
-  path: '/api/public/probe',
+const AppRoute = AppRouteImport.update({
+  id: '/app',
+  path: '/app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAnalyticsRoute = AppAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAssistantRoute = AppAssistantRouteImport.update({
+  id: '/assistant',
+  path: '/assistant',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAutomationsRoute = AppAutomationsRouteImport.update({
+  id: '/automations',
+  path: '/automations',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCampaignsRoute = AppCampaignsRouteImport.update({
+  id: '/campaigns',
+  path: '/campaigns',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppContactsRoute = AppContactsRouteImport.update({
+  id: '/contacts',
+  path: '/contacts',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDevelopersRoute = AppDevelopersRouteImport.update({
+  id: '/developers',
+  path: '/developers',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDomainsRoute = AppDomainsRouteImport.update({
+  id: '/domains',
+  path: '/domains',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppIntegrationsRoute = AppIntegrationsRouteImport.update({
+  id: '/integrations',
+  path: '/integrations',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSegmentsRoute = AppSegmentsRouteImport.update({
+  id: '/segments',
+  path: '/segments',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTemplatesRoute = AppTemplatesRouteImport.update({
+  id: '/templates',
+  path: '/templates',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTransactionalRoute = AppTransactionalRouteImport.update({
+  id: '/transactional',
+  path: '/transactional',
+  getParentRoute: () => AppRoute,
+} as any)
+const CTokenRoute = CTokenRouteImport.update({
+  id: '/c/$token',
+  path: '/c/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OMessageIdDotgifRoute = OMessageIdDotgifRouteImport.update({
+  id: '/o/$messageId.gif',
+  path: '/o/$messageId.gif',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UnsubscribeTokenRoute = UnsubscribeTokenRouteImport.update({
+  id: '/unsubscribe/$token',
+  path: '/unsubscribe/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiInternalJobsRoute = ApiInternalJobsRouteImport.update({
+  id: '/api/internal/jobs',
+  path: '/api/internal/jobs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicEmailEventsRoute = ApiPublicEmailEventsRouteImport.update({
+  id: '/api/public/email-events',
+  path: '/api/public/email-events',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicEventsRoute = ApiPublicEventsRouteImport.update({
+  id: '/api/public/events',
+  path: '/api/public/events',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiV1SplatRoute = ApiV1SplatRouteImport.update({
+  id: '/api/v1/$',
+  path: '/api/v1/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppAutomationsWorkflowIdRoute =
+  AppAutomationsWorkflowIdRouteImport.update({
+    id: '/$workflowId',
+    path: '/$workflowId',
+    getParentRoute: () => AppAutomationsRoute,
+  } as any)
+const AppCampaignsCampaignIdRoute = AppCampaignsCampaignIdRouteImport.update({
+  id: '/$campaignId',
+  path: '/$campaignId',
+  getParentRoute: () => AppCampaignsRoute,
+} as any)
+const ApiPublicJobsTickRoute = ApiPublicJobsTickRouteImport.update({
+  id: '/api/public/jobs/tick',
+  path: '/api/public/jobs/tick',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/api/public/probe': typeof ApiPublicProbeRoute
+  '/app': typeof AppRouteWithChildren
+  '/login': typeof LoginRoute
+  '/mcp': typeof McpRoute
+  '/signup': typeof SignupRoute
+  '/app/analytics': typeof AppAnalyticsRoute
+  '/app/assistant': typeof AppAssistantRoute
+  '/app/automations': typeof AppAutomationsRouteWithChildren
+  '/app/campaigns': typeof AppCampaignsRouteWithChildren
+  '/app/contacts': typeof AppContactsRoute
+  '/app/developers': typeof AppDevelopersRoute
+  '/app/domains': typeof AppDomainsRoute
+  '/app/integrations': typeof AppIntegrationsRoute
+  '/app/segments': typeof AppSegmentsRoute
+  '/app/settings': typeof AppSettingsRoute
+  '/app/templates': typeof AppTemplatesRoute
+  '/app/transactional': typeof AppTransactionalRoute
+  '/c/$token': typeof CTokenRoute
+  '/o/$messageId.gif': typeof OMessageIdDotgifRoute
+  '/unsubscribe/$token': typeof UnsubscribeTokenRoute
+  '/app/': typeof AppIndexRoute
+  '/api/internal/jobs': typeof ApiInternalJobsRoute
+  '/api/public/email-events': typeof ApiPublicEmailEventsRoute
+  '/api/public/events': typeof ApiPublicEventsRoute
+  '/api/v1/$': typeof ApiV1SplatRoute
+  '/app/automations/$workflowId': typeof AppAutomationsWorkflowIdRoute
+  '/app/campaigns/$campaignId': typeof AppCampaignsCampaignIdRoute
+  '/api/public/jobs/tick': typeof ApiPublicJobsTickRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/api/public/probe': typeof ApiPublicProbeRoute
+  '/login': typeof LoginRoute
+  '/mcp': typeof McpRoute
+  '/signup': typeof SignupRoute
+  '/app/analytics': typeof AppAnalyticsRoute
+  '/app/assistant': typeof AppAssistantRoute
+  '/app/automations': typeof AppAutomationsRouteWithChildren
+  '/app/campaigns': typeof AppCampaignsRouteWithChildren
+  '/app/contacts': typeof AppContactsRoute
+  '/app/developers': typeof AppDevelopersRoute
+  '/app/domains': typeof AppDomainsRoute
+  '/app/integrations': typeof AppIntegrationsRoute
+  '/app/segments': typeof AppSegmentsRoute
+  '/app/settings': typeof AppSettingsRoute
+  '/app/templates': typeof AppTemplatesRoute
+  '/app/transactional': typeof AppTransactionalRoute
+  '/c/$token': typeof CTokenRoute
+  '/o/$messageId.gif': typeof OMessageIdDotgifRoute
+  '/unsubscribe/$token': typeof UnsubscribeTokenRoute
+  '/app': typeof AppIndexRoute
+  '/api/internal/jobs': typeof ApiInternalJobsRoute
+  '/api/public/email-events': typeof ApiPublicEmailEventsRoute
+  '/api/public/events': typeof ApiPublicEventsRoute
+  '/api/v1/$': typeof ApiV1SplatRoute
+  '/app/automations/$workflowId': typeof AppAutomationsWorkflowIdRoute
+  '/app/campaigns/$campaignId': typeof AppCampaignsCampaignIdRoute
+  '/api/public/jobs/tick': typeof ApiPublicJobsTickRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/api/public/probe': typeof ApiPublicProbeRoute
+  '/app': typeof AppRouteWithChildren
+  '/login': typeof LoginRoute
+  '/mcp': typeof McpRoute
+  '/signup': typeof SignupRoute
+  '/app/analytics': typeof AppAnalyticsRoute
+  '/app/assistant': typeof AppAssistantRoute
+  '/app/automations': typeof AppAutomationsRouteWithChildren
+  '/app/campaigns': typeof AppCampaignsRouteWithChildren
+  '/app/contacts': typeof AppContactsRoute
+  '/app/developers': typeof AppDevelopersRoute
+  '/app/domains': typeof AppDomainsRoute
+  '/app/integrations': typeof AppIntegrationsRoute
+  '/app/segments': typeof AppSegmentsRoute
+  '/app/settings': typeof AppSettingsRoute
+  '/app/templates': typeof AppTemplatesRoute
+  '/app/transactional': typeof AppTransactionalRoute
+  '/c/$token': typeof CTokenRoute
+  '/o/$messageId.gif': typeof OMessageIdDotgifRoute
+  '/unsubscribe/$token': typeof UnsubscribeTokenRoute
+  '/app/': typeof AppIndexRoute
+  '/api/internal/jobs': typeof ApiInternalJobsRoute
+  '/api/public/email-events': typeof ApiPublicEmailEventsRoute
+  '/api/public/events': typeof ApiPublicEventsRoute
+  '/api/v1/$': typeof ApiV1SplatRoute
+  '/app/automations/$workflowId': typeof AppAutomationsWorkflowIdRoute
+  '/app/campaigns/$campaignId': typeof AppCampaignsCampaignIdRoute
+  '/api/public/jobs/tick': typeof ApiPublicJobsTickRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/public/probe'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/login'
+    | '/mcp'
+    | '/signup'
+    | '/app/analytics'
+    | '/app/assistant'
+    | '/app/automations'
+    | '/app/campaigns'
+    | '/app/contacts'
+    | '/app/developers'
+    | '/app/domains'
+    | '/app/integrations'
+    | '/app/segments'
+    | '/app/settings'
+    | '/app/templates'
+    | '/app/transactional'
+    | '/c/$token'
+    | '/o/$messageId.gif'
+    | '/unsubscribe/$token'
+    | '/app/'
+    | '/api/internal/jobs'
+    | '/api/public/email-events'
+    | '/api/public/events'
+    | '/api/v1/$'
+    | '/app/automations/$workflowId'
+    | '/app/campaigns/$campaignId'
+    | '/api/public/jobs/tick'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/public/probe'
-  id: '__root__' | '/' | '/api/public/probe'
+  to:
+    | '/'
+    | '/login'
+    | '/mcp'
+    | '/signup'
+    | '/app/analytics'
+    | '/app/assistant'
+    | '/app/automations'
+    | '/app/campaigns'
+    | '/app/contacts'
+    | '/app/developers'
+    | '/app/domains'
+    | '/app/integrations'
+    | '/app/segments'
+    | '/app/settings'
+    | '/app/templates'
+    | '/app/transactional'
+    | '/c/$token'
+    | '/o/$messageId.gif'
+    | '/unsubscribe/$token'
+    | '/app'
+    | '/api/internal/jobs'
+    | '/api/public/email-events'
+    | '/api/public/events'
+    | '/api/v1/$'
+    | '/app/automations/$workflowId'
+    | '/app/campaigns/$campaignId'
+    | '/api/public/jobs/tick'
+  id:
+    | '__root__'
+    | '/'
+    | '/app'
+    | '/login'
+    | '/mcp'
+    | '/signup'
+    | '/app/analytics'
+    | '/app/assistant'
+    | '/app/automations'
+    | '/app/campaigns'
+    | '/app/contacts'
+    | '/app/developers'
+    | '/app/domains'
+    | '/app/integrations'
+    | '/app/segments'
+    | '/app/settings'
+    | '/app/templates'
+    | '/app/transactional'
+    | '/c/$token'
+    | '/o/$messageId.gif'
+    | '/unsubscribe/$token'
+    | '/app/'
+    | '/api/internal/jobs'
+    | '/api/public/email-events'
+    | '/api/public/events'
+    | '/api/v1/$'
+    | '/app/automations/$workflowId'
+    | '/app/campaigns/$campaignId'
+    | '/api/public/jobs/tick'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ApiPublicProbeRoute: typeof ApiPublicProbeRoute
+  AppRoute: typeof AppRouteWithChildren
+  LoginRoute: typeof LoginRoute
+  McpRoute: typeof McpRoute
+  SignupRoute: typeof SignupRoute
+  CTokenRoute: typeof CTokenRoute
+  OMessageIdDotgifRoute: typeof OMessageIdDotgifRoute
+  UnsubscribeTokenRoute: typeof UnsubscribeTokenRoute
+  ApiInternalJobsRoute: typeof ApiInternalJobsRoute
+  ApiPublicEmailEventsRoute: typeof ApiPublicEmailEventsRoute
+  ApiPublicEventsRoute: typeof ApiPublicEventsRoute
+  ApiV1SplatRoute: typeof ApiV1SplatRoute
+  ApiPublicJobsTickRoute: typeof ApiPublicJobsTickRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -58,19 +387,270 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/probe': {
-      id: '/api/public/probe'
-      path: '/api/public/probe'
-      fullPath: '/api/public/probe'
-      preLoaderRoute: typeof ApiPublicProbeRouteImport
+    '/app': {
+      id: '/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app/': {
+      id: '/app/'
+      path: '/'
+      fullPath: '/app/'
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/analytics': {
+      id: '/app/analytics'
+      path: '/analytics'
+      fullPath: '/app/analytics'
+      preLoaderRoute: typeof AppAnalyticsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/assistant': {
+      id: '/app/assistant'
+      path: '/assistant'
+      fullPath: '/app/assistant'
+      preLoaderRoute: typeof AppAssistantRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/automations': {
+      id: '/app/automations'
+      path: '/automations'
+      fullPath: '/app/automations'
+      preLoaderRoute: typeof AppAutomationsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/campaigns': {
+      id: '/app/campaigns'
+      path: '/campaigns'
+      fullPath: '/app/campaigns'
+      preLoaderRoute: typeof AppCampaignsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/contacts': {
+      id: '/app/contacts'
+      path: '/contacts'
+      fullPath: '/app/contacts'
+      preLoaderRoute: typeof AppContactsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/developers': {
+      id: '/app/developers'
+      path: '/developers'
+      fullPath: '/app/developers'
+      preLoaderRoute: typeof AppDevelopersRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/domains': {
+      id: '/app/domains'
+      path: '/domains'
+      fullPath: '/app/domains'
+      preLoaderRoute: typeof AppDomainsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/integrations': {
+      id: '/app/integrations'
+      path: '/integrations'
+      fullPath: '/app/integrations'
+      preLoaderRoute: typeof AppIntegrationsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/segments': {
+      id: '/app/segments'
+      path: '/segments'
+      fullPath: '/app/segments'
+      preLoaderRoute: typeof AppSegmentsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/settings': {
+      id: '/app/settings'
+      path: '/settings'
+      fullPath: '/app/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/templates': {
+      id: '/app/templates'
+      path: '/templates'
+      fullPath: '/app/templates'
+      preLoaderRoute: typeof AppTemplatesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/transactional': {
+      id: '/app/transactional'
+      path: '/transactional'
+      fullPath: '/app/transactional'
+      preLoaderRoute: typeof AppTransactionalRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/c/$token': {
+      id: '/c/$token'
+      path: '/c/$token'
+      fullPath: '/c/$token'
+      preLoaderRoute: typeof CTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/o/$messageId.gif': {
+      id: '/o/$messageId.gif'
+      path: '/o/$messageId.gif'
+      fullPath: '/o/$messageId.gif'
+      preLoaderRoute: typeof OMessageIdDotgifRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/unsubscribe/$token': {
+      id: '/unsubscribe/$token'
+      path: '/unsubscribe/$token'
+      fullPath: '/unsubscribe/$token'
+      preLoaderRoute: typeof UnsubscribeTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/internal/jobs': {
+      id: '/api/internal/jobs'
+      path: '/api/internal/jobs'
+      fullPath: '/api/internal/jobs'
+      preLoaderRoute: typeof ApiInternalJobsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/email-events': {
+      id: '/api/public/email-events'
+      path: '/api/public/email-events'
+      fullPath: '/api/public/email-events'
+      preLoaderRoute: typeof ApiPublicEmailEventsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/events': {
+      id: '/api/public/events'
+      path: '/api/public/events'
+      fullPath: '/api/public/events'
+      preLoaderRoute: typeof ApiPublicEventsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/v1/$': {
+      id: '/api/v1/$'
+      path: '/api/v1/$'
+      fullPath: '/api/v1/$'
+      preLoaderRoute: typeof ApiV1SplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app/automations/$workflowId': {
+      id: '/app/automations/$workflowId'
+      path: '/$workflowId'
+      fullPath: '/app/automations/$workflowId'
+      preLoaderRoute: typeof AppAutomationsWorkflowIdRouteImport
+      parentRoute: typeof AppAutomationsRoute
+    }
+    '/app/campaigns/$campaignId': {
+      id: '/app/campaigns/$campaignId'
+      path: '/$campaignId'
+      fullPath: '/app/campaigns/$campaignId'
+      preLoaderRoute: typeof AppCampaignsCampaignIdRouteImport
+      parentRoute: typeof AppCampaignsRoute
+    }
+    '/api/public/jobs/tick': {
+      id: '/api/public/jobs/tick'
+      path: '/api/public/jobs/tick'
+      fullPath: '/api/public/jobs/tick'
+      preLoaderRoute: typeof ApiPublicJobsTickRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
 }
 
+interface AppAutomationsRouteChildren {
+  AppAutomationsWorkflowIdRoute: typeof AppAutomationsWorkflowIdRoute
+}
+
+const AppAutomationsRouteChildren: AppAutomationsRouteChildren = {
+  AppAutomationsWorkflowIdRoute: AppAutomationsWorkflowIdRoute,
+}
+
+const AppAutomationsRouteWithChildren = AppAutomationsRoute._addFileChildren(
+  AppAutomationsRouteChildren,
+)
+
+interface AppCampaignsRouteChildren {
+  AppCampaignsCampaignIdRoute: typeof AppCampaignsCampaignIdRoute
+}
+
+const AppCampaignsRouteChildren: AppCampaignsRouteChildren = {
+  AppCampaignsCampaignIdRoute: AppCampaignsCampaignIdRoute,
+}
+
+const AppCampaignsRouteWithChildren = AppCampaignsRoute._addFileChildren(
+  AppCampaignsRouteChildren,
+)
+
+interface AppRouteChildren {
+  AppAnalyticsRoute: typeof AppAnalyticsRoute
+  AppAssistantRoute: typeof AppAssistantRoute
+  AppAutomationsRoute: typeof AppAutomationsRouteWithChildren
+  AppCampaignsRoute: typeof AppCampaignsRouteWithChildren
+  AppContactsRoute: typeof AppContactsRoute
+  AppDevelopersRoute: typeof AppDevelopersRoute
+  AppDomainsRoute: typeof AppDomainsRoute
+  AppIntegrationsRoute: typeof AppIntegrationsRoute
+  AppSegmentsRoute: typeof AppSegmentsRoute
+  AppSettingsRoute: typeof AppSettingsRoute
+  AppTemplatesRoute: typeof AppTemplatesRoute
+  AppTransactionalRoute: typeof AppTransactionalRoute
+  AppIndexRoute: typeof AppIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppAnalyticsRoute: AppAnalyticsRoute,
+  AppAssistantRoute: AppAssistantRoute,
+  AppAutomationsRoute: AppAutomationsRouteWithChildren,
+  AppCampaignsRoute: AppCampaignsRouteWithChildren,
+  AppContactsRoute: AppContactsRoute,
+  AppDevelopersRoute: AppDevelopersRoute,
+  AppDomainsRoute: AppDomainsRoute,
+  AppIntegrationsRoute: AppIntegrationsRoute,
+  AppSegmentsRoute: AppSegmentsRoute,
+  AppSettingsRoute: AppSettingsRoute,
+  AppTemplatesRoute: AppTemplatesRoute,
+  AppTransactionalRoute: AppTransactionalRoute,
+  AppIndexRoute: AppIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ApiPublicProbeRoute: ApiPublicProbeRoute,
+  AppRoute: AppRouteWithChildren,
+  LoginRoute: LoginRoute,
+  McpRoute: McpRoute,
+  SignupRoute: SignupRoute,
+  CTokenRoute: CTokenRoute,
+  OMessageIdDotgifRoute: OMessageIdDotgifRoute,
+  UnsubscribeTokenRoute: UnsubscribeTokenRoute,
+  ApiInternalJobsRoute: ApiInternalJobsRoute,
+  ApiPublicEmailEventsRoute: ApiPublicEmailEventsRoute,
+  ApiPublicEventsRoute: ApiPublicEventsRoute,
+  ApiV1SplatRoute: ApiV1SplatRoute,
+  ApiPublicJobsTickRoute: ApiPublicJobsTickRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

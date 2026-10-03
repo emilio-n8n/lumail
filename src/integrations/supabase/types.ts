@@ -20,7 +20,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      lumail_exec: {
+        Args: {
+          p_claims: Json
+          p_returns: boolean
+          p_role: string
+          p_sql: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
