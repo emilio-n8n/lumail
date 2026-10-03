@@ -1,104 +1,206 @@
-"use client";
+import * as React from 'react'
+import { createPortal } from 'react-dom'
+import { X } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { Button } from './button'
 
-import * as React from "react";
-import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { X } from "lucide-react";
+function useMounted() {
+  const [mounted, setMounted] = React.useState(false)
+  React.useEffect(() => setMounted(true), [])
+  return mounted
+}
 
-import { cn } from "@/lib/utils";
+export function Dialog({
+  open,
+  onOpenChange,
+  title,
+  description,
+  children,
+  footer,
+  size = 'md',
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  title: React.ReactNode
+  description?: React.ReactNode
+  children?: React.ReactNode
+  footer?: React.ReactNode
+  size?: 'sm' | 'md' | 'lg' | 'xl'
+}) {
+  const mounted = useMounted()
 
-const Dialog = DialogPrimitive.Root;
+  React.useEffect(() => {
+    if (!open) return
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onOpenChange(false)
+    }
+    document.addEventListener('keydown', onKey)
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.body.style.overflow = previousOverflow
+    }
+  }, [open, onOpenChange])
 
-const DialogTrigger = DialogPrimitive.Trigger;
+  if (!mounted || !open) return null
 
-const DialogPortal = DialogPrimitive.Portal;
+  const width = {
+    sm: 'max-w-sm',
+    md: 'max-w-lg',
+    lg: 'max-w-2xl',
+    xl: 'max-w-4xl',
+  }[size]
 
-const DialogClose = DialogPrimitive.Close;
+  return createPortal(
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 pt-[8vh]">
+      <div
+        className="fixed inset-0 animate-[fade-in_120ms_ease-out] bg-foreground/35 backdrop-blur-[1px]"
+        onClick={() => onOpenChange(false)}
+        aria-hidden="true"
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        className={cn(
+          'relative z-10 w-full animate-[slide-up_140ms_ease-out] rounded-lg border border-border bg-card',
+          width,
+        )}
+      >
+        <div className="flex items-start justify-between gap-4 border-b border-border px-4 py-3">
+          <div className="min-w-0">
+            <h2 className="text-[13px] font-semibold tracking-tight">{title}</h2>
+            {description ? (
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                {description}
+              </p>
+            ) : null}
+          </div>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => onOpenChange(false)}
+            aria-label="Close"
+          >
+            <X />
+          </Button>
+        </div>
+        {children ? (
+          <div className="max-h-[65vh] overflow-y-auto px-4 py-4">{children}</div>
+        ) : null}
+        {footer ? (
+          <div className="flex items-center justify-end gap-2 border-t border-border bg-subtle px-4 py-3">
+            {footer}
+          </div>
+        ) : null}
+      </div>
+    </div>,
+    document.body,
+  )
+}
 
-const DialogOverlay = React.forwardRef<
-  React.ElementRef<typeof DialogPrimitive.Overlay>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
->(({ className, ...props }, ref) => (
-  <DialogPrimitive.Overlay
-    ref={ref}
-    className={cn(
-      "fixed inset-0 z-50 bg-black/80  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-      className,
-    )}
-    {...props}
-  />
-));
-DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
+export function ConfirmDialog({
+  open,
+  onOpenChange,
+  title,
+  message,
+  confirmLabel = 'Confirm',
+  onConfirm,
+  destructive = false,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  title: string
+  message: React.ReactNode
+  confirmLabel?: string
+  onConfirm: () => Promise<void> | void
+  destructive?: boolean
+}) {
+  const [busy, setBusy] = React.useState(false)
 
-const DialogContent = React.forwardRef<
-  React.ElementRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...props }, ref) => (
-  <DialogPortal>
-    <DialogOverlay />
-    <DialogPrimitive.Content
-      ref={ref}
-      className={cn(
-        "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:rounded-lg",
-        className,
-      )}
-      {...props}
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={title}
+      size="sm"
+      footer={
+        <>
+          <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button
+            variant={destructive ? 'destructive' : 'primary'}
+            size="sm"
+            loading={busy}
+            onClick={async () => {
+              setBusy(true)
+              try {
+                await onConfirm()
+                onOpenChange(false)
+              } finally {
+                setBusy(false)
+              }
+            }}
+          >
+            {confirmLabel}
+          </Button>
+        </>
+      }
     >
-      {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background cursor-pointer transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
-        <X className="h-4 w-4" />
-        <span className="sr-only">Close</span>
-      </DialogPrimitive.Close>
-    </DialogPrimitive.Content>
-  </DialogPortal>
-));
-DialogContent.displayName = DialogPrimitive.Content.displayName;
+      <div className="text-[13px] leading-relaxed text-muted-foreground">
+        {message}
+      </div>
+    </Dialog>
+  )
+}
 
-const DialogHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn("flex flex-col space-y-1.5 text-center sm:text-left", className)} {...props} />
-);
-DialogHeader.displayName = "DialogHeader";
+export function Drawer({
+  open,
+  onOpenChange,
+  side = 'right',
+  width = 'w-[520px]',
+  children,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  side?: 'right' | 'left'
+  width?: string
+  children: React.ReactNode
+}) {
+  const mounted = useMounted()
 
-const DialogFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div
-    className={cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", className)}
-    {...props}
-  />
-);
-DialogFooter.displayName = "DialogFooter";
+  React.useEffect(() => {
+    if (!open) return
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onOpenChange(false)
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [open, onOpenChange])
 
-const DialogTitle = React.forwardRef<
-  React.ElementRef<typeof DialogPrimitive.Title>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
->(({ className, ...props }, ref) => (
-  <DialogPrimitive.Title
-    ref={ref}
-    className={cn("text-lg font-semibold leading-none tracking-tight", className)}
-    {...props}
-  />
-));
-DialogTitle.displayName = DialogPrimitive.Title.displayName;
+  if (!mounted || !open) return null
 
-const DialogDescription = React.forwardRef<
-  React.ElementRef<typeof DialogPrimitive.Description>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
->(({ className, ...props }, ref) => (
-  <DialogPrimitive.Description
-    ref={ref}
-    className={cn("text-sm text-muted-foreground", className)}
-    {...props}
-  />
-));
-DialogDescription.displayName = DialogPrimitive.Description.displayName;
-
-export {
-  Dialog,
-  DialogPortal,
-  DialogOverlay,
-  DialogTrigger,
-  DialogClose,
-  DialogContent,
-  DialogHeader,
-  DialogFooter,
-  DialogTitle,
-  DialogDescription,
-};
+  return createPortal(
+    <div className="fixed inset-0 z-50">
+      <div
+        className="absolute inset-0 animate-[fade-in_120ms_ease-out] bg-foreground/35"
+        onClick={() => onOpenChange(false)}
+        aria-hidden="true"
+      />
+      <div
+        className={cn(
+          'absolute inset-y-0 flex flex-col border-border bg-card shadow-none',
+          side === 'right'
+            ? 'right-0 border-l animate-[slide-in-right_160ms_ease-out]'
+            : 'left-0 border-r animate-[slide-in-left_160ms_ease-out]',
+          width,
+          'max-w-[92vw]',
+        )}
+      >
+        {children}
+      </div>
+    </div>,
+    document.body,
+  )
+}
