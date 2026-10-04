@@ -261,7 +261,7 @@ export async function listMembers(): Promise<WorkspaceMember[]> {
       select m.id, m.role, m.created_at as "createdAt",
              u.id as "userId", u.email, u.full_name as "fullName", u.last_seen_at as "lastSeenAt"
       from public.memberships m
-      join public.users u on u.id = m.user_id
+      join public.profiles u on u.id = m.user_id
       where m.workspace_id = $1
       order by m.created_at asc
       `,

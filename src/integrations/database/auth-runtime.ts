@@ -29,7 +29,7 @@ function apiKeySession(context: ApiKeyContext): Promise<AuthSession> {
       tx,
       `select m.role, u.email
        from public.memberships m
-       join public.users u on u.id = m.user_id
+       join public.profiles u on u.id = m.user_id
        where m.workspace_id = $1 and m.user_id = $2`,
       [context.workspaceId, context.principalUserId],
     )

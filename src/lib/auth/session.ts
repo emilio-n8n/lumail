@@ -5,7 +5,7 @@ import {
   setCookie,
 } from '@tanstack/react-start/server'
 import { withAdminDb, one, type Tx } from '@/integrations/database/client'
-import { generateToken, hashPassword, sha256, verifyPassword } from './crypto'
+import { createClient } from '@supabase/supabase-js'
 
 export const SESSION_COOKIE = 'lm_session'
 export const WORKSPACE_COOKIE = 'lm_workspace'
@@ -86,53 +86,99 @@ export type ApiKeyContext = {
 
 export const apiKeyStorage = new AsyncLocalStorage<ApiKeyContext | null>()
 
-type SessionRow = {
-  session_id: string
-  expires_at: Date
+
+/* ----------------------------------------------------------- Cloud auth */
+
+function readBearer(): string | undefined {
+  const header = getRequestHeaders().get('authorization')
+  if (header?.toLowerCase().startsWith('bearer ')) {
+    const token = header.slice(7).trim()
+    if (token && token.split('.').length === 3) return token
+  }
+  return undefined
+}
+
+function readSessionToken(): string | undefined {
+  return (
+    readBearer() ??
+    getCookie(SESSION_COOKIE) ??
+    readCookieFromHeader(getRequestHeaders().get('cookie'), SESSION_COOKIE)
+  )
+}
+
+/** Verifies a Lovable Cloud access token and returns the user it belongs to. */
+export async function verifyAccessToken(
+  token: string,
+): Promise<{ id: string; email: string; fullName: string | null } | null> {
+  const url = process.env['SUPABASE_URL']
+  const key = process.env['SUPABASE_PUBLISHABLE_KEY']
+  if (!url || !key) return null
+  const client = createClient(url, key, {
+    auth: { persistSession: false, autoRefreshToken: false, storage: undefined },
+  })
+  const { data, error } = await client.auth.getUser(token)
+  if (error || !data.user || !data.user.email) return null
+  const meta = (data.user.user_metadata ?? {}) as Record<string, unknown>
+  const fullName =
+    (typeof meta['full_name'] === 'string' && meta['full_name']) ||
+    (typeof meta['name'] === 'string' && meta['name']) ||
+    null
+  return { id: data.user.id, email: data.user.email.toLowerCase(), fullName: fullName || null }
+}
+
+type ProfileRow = {
   user_id: string
   email: string
   full_name: string | null
   avatar_color: string
-  last_workspace_id: string | null
+  first_workspace_id: string | null
   role: AppRole | null
+}
+
+const tokenCache = new Map<string, { userId: string; expires: number }>()
+
+async function userIdForToken(token: string): Promise<string | null> {
+  const cached = tokenCache.get(token)
+  if (cached && cached.expires > Date.now()) return cached.userId
+  const user = await verifyAccessToken(token)
+  if (!user) return null
+  if (tokenCache.size > 500) tokenCache.clear()
+  tokenCache.set(token, { userId: user.id, expires: Date.now() + 60_000 })
+  return user.id
 }
 
 export async function resolveSession(): Promise<AuthSession | null> {
   const cached = authStorage.getStore()
   if (cached !== undefined) return cached
 
-  const token =
-    getCookie(SESSION_COOKIE) ??
-    readCookieFromHeader(getRequestHeaders().get('cookie'), SESSION_COOKIE)
-
+  const token = readSessionToken()
   if (!token) return null
 
+  const userId = await userIdForToken(token)
+  if (!userId) return null
+
   return withAdminDb(async (tx) => {
-    const row = await one<SessionRow>(
+    const row = await one<ProfileRow>(
       tx,
       `
       select
-        s.id                as session_id,
-        s.expires_at,
-        u.id                as user_id,
-        u.email,
-        u.full_name,
-        u.avatar_color,
-        m.workspace_id      as last_workspace_id,
+        p.id           as user_id,
+        p.email,
+        p.full_name,
+        p.avatar_color,
+        m.workspace_id as first_workspace_id,
         m.role
-      from public.sessions s
-      join public.users u on u.id = s.user_id
+      from public.profiles p
       left join lateral (
         select mm.workspace_id, mm.role
         from public.memberships mm
-        where mm.user_id = u.id
+        where mm.user_id = p.id
         order by mm.created_at asc
         limit 1
       ) m on true
-      where s.token_hash = $1
-        and s.expires_at > now()
+      where p.id = $1
       `,
-      [sha256(token)],
+      [userId],
     )
 
     if (!row) return null
@@ -142,16 +188,14 @@ export async function resolveSession(): Promise<AuthSession | null> {
       readCookieFromHeader(getRequestHeaders().get('cookie'), WORKSPACE_COOKIE)
 
     // The cookie is a hint, not an authority: only a workspace the user is
-    // actually a member of may be selected. Anything else falls back to their
-    // first workspace, which also keeps a stale or hand-edited cookie from
-    // reaching a uuid parameter.
+    // actually a member of may be selected.
     const workspaceId =
       requestedWorkspace && (await isMemberOf(tx, row.user_id, requestedWorkspace))
         ? requestedWorkspace
-        : row.last_workspace_id
+        : row.first_workspace_id
 
     return {
-      sessionId: row.session_id,
+      sessionId: '',
       user: {
         id: row.user_id,
         email: row.email,
@@ -193,92 +237,75 @@ function readCookieFromHeader(
   return undefined
 }
 
-export async function createSession(input: {
-  email: string
-  password: string
-  fullName?: string | null
-  userAgent?: string | null
-  ip?: string | null
-}): Promise<AuthSession> {
-  const passwordHash = hashPassword(input.password)
+/**
+ * Binds a verified Lovable Cloud session to this browser.
+ *
+ * Makes sure the user has a profile and at least one workspace (every new user
+ * starts as owner of their own), then stores the access token in an httpOnly
+ * cookie so server-rendered pages know who is asking.
+ */
+export async function establishSession(accessToken: string): Promise<AuthSession> {
+  const user = await verifyAccessToken(accessToken)
+  if (!user) throw new UnauthorizedError('Your session has expired. Sign in again.')
 
-  return withAdminDb(async (tx) => {
-    const existing = await one<{ id: string }>(
-      tx,
-      'select id from public.users where email = $1',
-      [input.email.toLowerCase()],
-    )
-
-    let userId = existing?.id
-
-    if (!userId) {
-      const created = await one<{ id: string }>(
-        tx,
-        `
-        insert into public.users (email, password_hash, full_name)
-        values ($1, $2, $3)
-        returning id
-        `,
-        [input.email.toLowerCase(), passwordHash, input.fullName ?? null],
-      )
-      userId = created!.id
-
-      // Every new user starts with their own workspace as owner. The slug
-      // lookup reuses the open transaction: opening a second one here would
-      // deadlock against the single PGlite connection.
-      const slug = await uniqueSlug(tx, input.email)
-      const workspace = await one<{ id: string }>(
-        tx,
-        `
-        insert into public.workspaces (name, slug)
-        values ($1, $2)
-        returning id
-        `,
-        [personalWorkspaceName(input.fullName, input.email), slug],
-      )
-      await tx.query(
-        `insert into public.memberships (workspace_id, user_id, role) values ($1, $2, 'owner')`,
-        [workspace!.id, userId],
-      )
-    } else {
-      const row = await one<{ password_hash: string }>(
-        tx,
-        'select password_hash from public.users where id = $1',
-        [userId],
-      )
-      if (!row || !verifyPassword(input.password, row.password_hash)) {
-        throw new UnauthorizedError('Incorrect email or password')
-      }
-    }
-
-    const token = generateToken()
+  await withAdminDb(async (tx) => {
     await tx.query(
-      `
-      insert into public.sessions (user_id, token_hash, expires_at, user_agent, ip)
-      values ($1, $2, now() + ($3 || ' seconds')::interval, $4, $5)
-      `,
-      [userId, sha256(token), String(SESSION_TTL_SECONDS), input.userAgent ?? null, input.ip ?? null],
+      `insert into public.profiles (id, email, full_name)
+       values ($1, $2, $3)
+       on conflict (id) do update set email = excluded.email, last_seen_at = now()`,
+      [user.id, user.email, user.fullName ?? user.email.split('@')[0]],
     )
 
-    const user = await one<AuthUser>(
+    const membership = await one<{ id: string }>(
       tx,
-      'select id, email, full_name as "fullName", avatar_color as "avatarColor" from public.users where id = $1',
+      'select id from public.memberships where user_id = $1 limit 1',
+      [user.id],
+    )
+    if (membership) return
+
+    const slug = await uniqueSlug(tx, user.email)
+    await tx.query(
+      `with ws as (
+         insert into public.workspaces (name, slug) values ($1, $2) returning id
+       )
+       insert into public.memberships (workspace_id, user_id, role)
+       select id, $3, 'owner' from ws`,
+      [personalWorkspaceName(user.fullName, user.email), slug, user.id],
+    )
+  })
+
+  setSessionCookie(accessToken)
+  tokenCache.set(accessToken, { userId: user.id, expires: Date.now() + 60_000 })
+
+  const session = await authStorage.run(undefined as never, () => resolveSessionForToken(accessToken))
+  if (!session) throw new UnauthorizedError()
+  if (session.workspaceId) setWorkspaceCookie(session.workspaceId)
+  return session
+}
+
+async function resolveSessionForToken(token: string): Promise<AuthSession | null> {
+  const userId = await userIdForToken(token)
+  if (!userId) return null
+  return withAdminDb(async (tx) => {
+    const row = await one<ProfileRow>(
+      tx,
+      `select p.id as user_id, p.email, p.full_name, p.avatar_color,
+              m.workspace_id as first_workspace_id, m.role
+       from public.profiles p
+       left join lateral (
+         select mm.workspace_id, mm.role from public.memberships mm
+         where mm.user_id = p.id order by mm.created_at asc limit 1
+       ) m on true
+       where p.id = $1`,
       [userId],
     )
-    const membership = await one<{ workspace_id: string; role: AppRole }>(
-      tx,
-      'select workspace_id, role from public.memberships where user_id = $1 order by created_at asc limit 1',
-      [userId],
-    )
-
-    setSessionCookie(token)
-
+    if (!row) return null
     return {
       sessionId: '',
-      user: user!,
-      workspaceId: membership?.workspace_id ?? null,
-      role: membership?.role ?? null,
-    } satisfies AuthSession
+      user: { id: row.user_id, email: row.email, fullName: row.full_name, avatarColor: row.avatar_color },
+      workspaceId: row.first_workspace_id,
+      role: row.role,
+    }
   })
 }
 
@@ -286,7 +313,7 @@ export function setSessionCookie(token: string): void {
   setCookie(SESSION_COOKIE, token, {
     httpOnly: true,
     sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    secure: true,
     path: '/',
     maxAge: SESSION_TTL_SECONDS,
   })
@@ -296,21 +323,13 @@ export function setWorkspaceCookie(workspaceId: string): void {
   setCookie(WORKSPACE_COOKIE, workspaceId, {
     httpOnly: false,
     sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    secure: true,
     path: '/',
     maxAge: SESSION_TTL_SECONDS,
   })
 }
 
 export async function destroySession(): Promise<void> {
-  const token = getCookie(SESSION_COOKIE)
-  if (token) {
-    await withAdminDb(async (tx) => {
-      await tx.query('delete from public.sessions where token_hash = $1', [
-        sha256(token),
-      ])
-    })
-  }
   setCookie(SESSION_COOKIE, '', { path: '/', maxAge: 0 })
 }
 
@@ -324,14 +343,15 @@ function personalWorkspaceName(
 
 async function uniqueSlug(tx: Tx, seed: string): Promise<string> {
   const base = seed
+    .split('@')[0]!
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '')
     .slice(0, 32)
     .replace(/-$/, '')
-    || 'workspace'
+  const root = base.length >= 2 ? base : `ws-${base || 'team'}`
 
-  let candidate = base
+  let candidate = root
   let counter = 1
   for (;;) {
     const clash = await one<{ id: string }>(
@@ -341,6 +361,6 @@ async function uniqueSlug(tx: Tx, seed: string): Promise<string> {
     )
     if (!clash) return candidate
     counter += 1
-    candidate = `${base}-${counter}`
+    candidate = `${root}-${counter}`
   }
 }
