@@ -16,7 +16,7 @@ const sessionDeps = createServerOnlyFn(async () => {
     import('@/lib/domain/workspace'),
   ])
   return {
-    createSession: crypto.createSession,
+    establishSession: crypto.establishSession,
     destroySession: crypto.destroySession,
     resolveSession: crypto.resolveSession,
     setWorkspaceCookie: crypto.setWorkspaceCookie,
@@ -85,48 +85,13 @@ export async function guard<T>(fn: () => Promise<T>): Promise<T> {
   }
 }
 
-export const authSignup = createServerFn({ method: 'POST' })
-    .validator(
-      z.object({
-        email: z.string().email('Enter a valid email address'),
-        password: z.string().min(8, 'Use at least 8 characters'),
-        fullName: z.string().min(1).max(120).optional(),
-      }),
-    )
+export const authEstablish = createServerFn({ method: 'POST' })
+    .validator(z.object({ accessToken: z.string().min(20) }))
     .handler(async ({ data }) =>
       guard(async () => {
-        const { createSession, setWorkspaceCookie } = await session()
-        const result = await createSession({
-          email: data.email,
-          password: data.password,
-          fullName: data.fullName ?? null,
-        })
-        if (result.workspaceId) setWorkspaceCookie(result.workspaceId)
-        return {
-          ok: true,
-          user: result.user,
-          workspaceId: result.workspaceId,
-        }
-      }),
-    )
-
-export const authLogin = createServerFn({ method: 'POST' })
-    .validator(
-      z.object({
-        email: z.string().email('Enter a valid email address'),
-        password: z.string().min(1, 'Enter your password'),
-      }),
-    )
-    .handler(async ({ data }) =>
-      guard(async () => {
-        const { createSession, setWorkspaceCookie } = await session()
-        const result = await createSession(data)
-        if (result.workspaceId) setWorkspaceCookie(result.workspaceId)
-        return {
-          ok: true,
-          user: result.user,
-          workspaceId: result.workspaceId,
-        }
+        const { establishSession } = await session()
+        const result = await establishSession(data.accessToken)
+        return { ok: true, user: result.user, workspaceId: result.workspaceId }
       }),
     )
 
@@ -172,8 +137,7 @@ export const authSwitchWorkspace = createServerFn({ method: 'POST' })
     )
 
 export const authServerFns = {
-  signup: authSignup,
-  login: authLogin,
+  establish: authEstablish,
   logout: authLogout,
   whoami: authWhoami,
   workspaces: authWorkspaces,
