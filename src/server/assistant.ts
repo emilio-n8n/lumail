@@ -19,7 +19,7 @@ const loadTools = createServerOnlyFn(() => import('@/lib/ai/tools'))
  * says it created a segment, a segment really exists — and it is visible in the
  * dashboard immediately.
  *
- * With `ANTHROPIC_API_KEY` present the assistant is driven by Claude. Without a
+ * The assistant is driven by Lovable AI. Without a
  * key, a deterministic intent router drives the very same tools, so the feature
  * is fully demonstrable offline.
  */
