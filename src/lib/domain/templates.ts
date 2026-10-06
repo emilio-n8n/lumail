@@ -75,7 +75,7 @@ export async function createTemplate(input: TemplateInput): Promise<EmailTemplat
     const html =
       input.html ??
       renderDocument(document, {
-        baseUrl: process.env.APP_URL ?? 'http://localhost:3000',
+        baseUrl: process.env.APP_URL ?? 'https://project--acb833d5-fbcf-4f6f-aa44-688d9e5e9e11.lovable.app',
         preview: true,
         preheader: input.preheader,
       })
@@ -124,7 +124,7 @@ export async function updateTemplate(
       patch.html ??
       (patch.document
         ? renderDocument(document, {
-            baseUrl: process.env.APP_URL ?? 'http://localhost:3000',
+            baseUrl: process.env.APP_URL ?? 'https://project--acb833d5-fbcf-4f6f-aa44-688d9e5e9e11.lovable.app',
             preview: true,
             preheader: patch.preheader ?? current.preheader,
           })
