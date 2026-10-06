@@ -253,8 +253,8 @@ function AssistantPage() {
             <CardHeader title="How it works" />
             <div className="space-y-2 p-4 text-[12px] leading-relaxed text-muted-foreground">
               <p>
-                With <code className="font-mono">ANTHROPIC_API_KEY</code> set,
-                Claude drives the tools directly.
+                Lovable AI is connected, so
+                the model drives the tools directly.
               </p>
               <p>
                 Without a key, a deterministic router drives the very same
