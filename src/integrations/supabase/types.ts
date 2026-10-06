@@ -1389,6 +1389,7 @@ export type Database = {
         }
         Returns: Json
       }
+      wake_job_runner_now: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "owner" | "admin" | "member"
