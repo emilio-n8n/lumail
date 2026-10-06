@@ -30,18 +30,21 @@ export const Route = createFileRoute('/api/public/jobs/tick')({
         json({
           endpoint: '/api/public/jobs/tick',
           method: 'POST',
-          authentication: 'x-lumail-secret header matching JOB_SECRET',
+          authentication: 'x-lumail-secret header matching the server-held job secret',
           description:
             'Claims due jobs and executes them: campaign fan-out, automation steps, webhook delivery and simulated mailbox events.',
         }),
 
       POST: async ({ request }) => {
         const { runDueJobs } = await import('@/lib/jobs/runner')
-        const secret = process.env.JOB_SECRET
-        if (!(secret && isAuthorised(request, secret))) {
-          const { authenticateCronRequest } = await import('@/integrations/supabase/cron-auth')
-          const denied = await authenticateCronRequest(request)
-          if (denied) return denied
+        // The secret lives in a server-only settings row the scheduler reads.
+        const { withAdminDb, one } = await import('@/integrations/database/client')
+        const row = await withAdminDb((tx) =>
+          one<{ value: string }>(tx, "select value from public.app_private_settings where key = 'job_secret'"),
+        )
+        const secret = row?.value ?? process.env.JOB_SECRET
+        if (!secret || !isAuthorised(request, secret)) {
+          return json({ error: 'Invalid secret' }, 401)
         }
 
         const summary = await runDueJobs(50)
