@@ -19,8 +19,8 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Field, Input, Select, Textarea } from '@/components/ui/input'
-import { templateServerFns } from '@/server/campaigns'
-import { segmentServerFns } from '@/server/contacts'
+import { templateServerFns } from '@/rpc/campaigns'
+import { segmentServerFns } from '@/rpc/contacts'
 import { useServerQuery } from '@/lib/use-server-query'
 import type {
   WorkflowDefinition,

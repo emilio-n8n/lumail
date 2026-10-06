@@ -28,7 +28,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
 import { Kbd } from '@/components/ui/badge'
-import { authServerFns } from '@/server/auth'
+import { authServerFns } from '@/rpc/auth'
 import { useToast } from '@/components/ui/toast'
 import type { WorkspaceSummary } from '@/lib/domain/workspace'
 

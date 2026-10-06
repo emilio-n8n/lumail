@@ -17,7 +17,7 @@ import { Field, Input, Select } from '@/components/ui/input'
 import { Tabs } from '@/components/ui/tabs'
 import { useToast } from '@/components/ui/toast'
 import { ActivityTimeline } from '@/components/app/activity'
-import { contactServerFns } from '@/server/contacts'
+import { contactServerFns } from '@/rpc/contacts'
 import { useServerQuery } from '@/lib/use-server-query'
 import {
   cn,

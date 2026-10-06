@@ -7,7 +7,7 @@ import { AreaChart, BarChart, Funnel, ProgressBar } from '@/components/app/chart
 import { Card, CardHeader } from '@/components/ui/badge'
 import { SegmentedControl, EmptyState } from '@/components/ui/tabs'
 import { DataTable, type Column } from '@/components/app/data-table'
-import { analyticsServerFns } from '@/server/workflows'
+import { analyticsServerFns } from '@/rpc/workflows'
 import { useServerQuery } from '@/lib/use-server-query'
 import {
   formatCompact,

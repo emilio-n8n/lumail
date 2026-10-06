@@ -1,7 +1,7 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { Link } from '@tanstack/react-router'
-import { authServerFns } from '@/server/auth'
+import { authServerFns } from '@/rpc/auth'
 import { Button } from '@/components/ui/button'
 import { Field, Input } from '@/components/ui/input'
 import { useToast } from '@/components/ui/toast'

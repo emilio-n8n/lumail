@@ -20,7 +20,7 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
     let cancelled = false
     void Promise.all([
       import('@/integrations/supabase/client'),
-      import('@/server/auth'),
+      import('@/rpc/auth'),
     ]).then(([{ supabase }, { authServerFns }]) => {
       if (cancelled) return
       const { data } = supabase.auth.onAuthStateChange((event, session) => {

@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Field, Input, Select, Textarea } from '@/components/ui/input'
 import { useToast } from '@/components/ui/toast'
-import { contactServerFns } from '@/server/contacts'
+import { contactServerFns } from '@/rpc/contacts'
 import { useServerQuery, useInvalidateServer } from '@/lib/use-server-query'
 import { useQueryClient } from '@tanstack/react-query'
 import {
