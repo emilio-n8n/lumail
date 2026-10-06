@@ -38,11 +38,10 @@ export const Route = createFileRoute('/api/public/jobs/tick')({
       POST: async ({ request }) => {
         const { runDueJobs } = await import('@/lib/jobs/runner')
         const secret = process.env.JOB_SECRET
-        if (!secret) {
-          return json({ error: 'JOB_SECRET is not configured on this server' }, 503)
-        }
-        if (!isAuthorised(request, secret)) {
-          return json({ error: 'Invalid secret' }, 401)
+        if (!(secret && isAuthorised(request, secret))) {
+          const { authenticateCronRequest } = await import('@/integrations/supabase/cron-auth')
+          const denied = await authenticateCronRequest(request)
+          if (denied) return denied
         }
 
         const summary = await runDueJobs(50)

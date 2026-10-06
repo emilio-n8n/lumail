@@ -37,7 +37,10 @@ function DashboardLayout() {
   // Boot the durable job worker once per browser session. It then runs for the
   // lifetime of the server process.
   React.useEffect(() => {
-    void fetch('/api/internal/jobs').catch(() => undefined)
+    const ping = () => void fetch('/api/internal/jobs').catch(() => undefined)
+    ping()
+    const timer = window.setInterval(ping, 15_000)
+    return () => window.clearInterval(timer)
   }, [])
 
   const { data: context, error, refetch, isFetching } = useServerQuery(
