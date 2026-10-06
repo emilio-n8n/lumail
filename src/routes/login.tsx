@@ -1,11 +1,13 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { Link } from '@tanstack/react-router'
-import { authServerFns } from '@/server/auth'
+import { authServerFns } from '@/rpc/auth'
 import { Button } from '@/components/ui/button'
 import { Field, Input } from '@/components/ui/input'
 import { useToast } from '@/components/ui/toast'
 import { Spinner } from '@/components/ui/spinner'
+import { supabase } from '@/integrations/supabase/client'
+import { lovable } from '@/integrations/lovable/index'
 
 export const Route = createFileRoute('/login')({
   validateSearch: (search: Record<string, unknown>): { mode?: 'login' | 'signup' } => ({
@@ -32,33 +34,71 @@ function AuthPage() {
     setIsSignup(mode === 'signup')
   }, [mode])
 
+  const finish = async (accessToken: string) => {
+    await authServerFns.establish({ data: { accessToken } })
+    window.location.href = '/app'
+  }
+
+  // A session that already exists in this browser (after Google, an email
+  // confirmation link, or an expired server cookie) is bound and used directly.
+  useEffect(() => {
+    void supabase.auth.getSession().then(({ data }) => {
+      if (data.session) void finish(data.session.access_token).catch(() => undefined)
+    })
+  }, [])
+
   const submit = async (event: React.FormEvent) => {
     event.preventDefault()
     setBusy(true)
     setError(null)
     try {
       if (isSignup) {
-        await authServerFns.signup({
-          data: {
-            email: email.trim(),
-            password,
-            fullName: fullName.trim() || undefined,
+        const { data, error: signUpError } = await supabase.auth.signUp({
+          email: email.trim(),
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/login`,
+            data: { full_name: fullName.trim() || undefined },
           },
         })
-        toast({
-          title: 'Workspace created',
-          description: 'We seeded a demo workspace so you can look around.',
-          tone: 'success',
-        })
+        if (signUpError) throw signUpError
+        if (!data.session) {
+          toast({
+            title: 'Check your inbox',
+            description: 'Confirm your email address, then come back to sign in.',
+            tone: 'success',
+          })
+          setIsSignup(false)
+          return
+        }
+        await finish(data.session.access_token)
       } else {
-        await authServerFns.login({ data: { email: email.trim(), password } })
+        const { data, error: signInError } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        })
+        if (signInError) throw signInError
+        await finish(data.session.access_token)
       }
-      window.location.href = '/app'
     } catch (caught) {
       setError((caught as Error).message)
     } finally {
       setBusy(false)
     }
+  }
+
+  const google = async () => {
+    setError(null)
+    const result = await lovable.auth.signInWithOAuth('google', {
+      redirect_uri: `${window.location.origin}/login`,
+    })
+    if (result.error) {
+      setError(result.error.message ?? 'Google sign-in failed')
+      return
+    }
+    if (result.redirected) return
+    const { data } = await supabase.auth.getSession()
+    if (data.session) await finish(data.session.access_token)
   }
 
   return (
@@ -80,7 +120,7 @@ function AuthPage() {
           </h1>
           <p className="mt-2 text-[13px] text-muted-foreground">
             {isSignup
-              ? 'Create a workspace. Your own email provider is not required — a simulator is wired up by default.'
+              ? 'Create your account and your first workspace.'
               : 'Sign in to your workspace.'}
           </p>
 
@@ -140,6 +180,16 @@ function AuthPage() {
             </Button>
           </form>
 
+          <Button
+            type="button"
+            variant="secondary"
+            size="lg"
+            className="mt-3 w-full justify-center"
+            onClick={() => void google()}
+          >
+            Continue with Google
+          </Button>
+
           <button
             type="button"
             onClick={() => {
@@ -153,16 +203,6 @@ function AuthPage() {
               : 'No account yet? Create one'}
           </button>
 
-          <div className="mt-8 rounded-md border border-border bg-subtle p-3">
-            <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
-              Demo workspace
-            </p>
-            <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground">
-              Run <code className="font-mono">npm run seed</code> to load 140+
-              contacts, campaigns, templates and automations with 90 days of
-              engagement history.
-            </p>
-          </div>
         </div>
       </div>
 

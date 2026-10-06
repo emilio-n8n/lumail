@@ -1,7 +1,7 @@
 import { createServerFn, createServerOnlyFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { streamText, stepCountIs, tool, type ModelMessage, type ToolSet } from 'ai'
-import { anthropic } from '@ai-sdk/anthropic'
+import { createOpenAI } from '@ai-sdk/openai'
 import { guard } from './auth'
 
 /**
@@ -19,7 +19,7 @@ const loadTools = createServerOnlyFn(() => import('@/lib/ai/tools'))
  * says it created a segment, a segment really exists — and it is visible in the
  * dashboard immediately.
  *
- * With `ANTHROPIC_API_KEY` present the assistant is driven by Claude. Without a
+ * The assistant is driven by Lovable AI. Without a
  * key, a deterministic intent router drives the very same tools, so the feature
  * is fully demonstrable offline.
  */
@@ -98,7 +98,7 @@ async function* assistantImpl(history: { role: string; content: string }[]) {
     '@/integrations/database/auth-runtime'
   )
   const { workspaceId } = await requireWorkspaceMember()
-  const apiKey = process.env.ANTHROPIC_API_KEY
+  const apiKey = process.env.LOVABLE_API_KEY
 
   if (!apiKey) {
     yield* offlineAssistant(history, workspaceId)
@@ -110,17 +110,43 @@ async function* assistantImpl(history: { role: string; content: string }[]) {
     ...(history as ModelMessage[]),
   ]
 
+  let runId: string | undefined
+  const gateway = createOpenAI({
+    baseURL: 'https://ai.gateway.lovable.dev/v1',
+    apiKey,
+    headers: { 'Lovable-API-Key': apiKey, 'X-Lovable-AIG-SDK': 'vercel-ai-sdk' },
+    fetch: async (input, init) => {
+      const headers = new Headers(init?.headers)
+      if (runId) headers.set('X-Lovable-AIG-Run-ID', runId)
+      const response = await fetch(input, { ...init, headers })
+      runId ??= response.headers.get('X-Lovable-AIG-Run-ID') ?? undefined
+      return response
+    },
+  })
+
   const result = streamText({
-    model: anthropic('claude-sonnet-4-5'),
+    model: gateway.responses('openai/gpt-6-astra'),
+    providerOptions: {
+      openai: {
+        forceReasoning: true,
+        reasoningEffort: 'low',
+        reasoningSummary: 'auto',
+        store: false,
+        include: ['reasoning.encrypted_content'],
+      },
+    },
     system: SYSTEM_PROMPT,
     messages,
     tools: await buildTools(),
-    stopWhen: stepCountIs(12),
+    stopWhen: stepCountIs(50),
   })
 
   for await (const part of result.fullStream) {
     if (part.type === 'text-delta') {
       yield { type: 'text' as const, delta: part.text }
+    } else if (part.type === 'error') {
+      const message = (part.error as Error)?.message ?? String(part.error)
+      yield { type: 'text' as const, delta: `\n\n_The assistant could not answer: ${message}_` }
     }
   }
 }

@@ -98,7 +98,7 @@ Lumail instance: ${getAppUrl()}`,
       {
         title: tool.title,
         description: tool.description,
-        inputSchema: tool.schema,
+        inputSchema: tool.schema as never,
         annotations: {
           readOnlyHint: tool.scope.endsWith(':read'),
           destructiveHint:

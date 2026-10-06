@@ -28,7 +28,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
 import { Kbd } from '@/components/ui/badge'
-import { authServerFns } from '@/server/auth'
+import { authServerFns } from '@/rpc/auth'
 import { useToast } from '@/components/ui/toast'
 import type { WorkspaceSummary } from '@/lib/domain/workspace'
 
@@ -329,6 +329,7 @@ export function Topbar({
             onSelect={async () => {
               try {
                 await authServerFns.logout()
+                await (await import('@/integrations/supabase/client')).supabase.auth.signOut()
                 window.location.href = '/login'
               } catch (error) {
                 toast({

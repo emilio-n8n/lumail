@@ -6,7 +6,7 @@ import { WORKFLOW_TRIGGERS } from '@/lib/domain/workflow-types'
 import { WEBHOOK_EVENTS } from '@/lib/webhooks/events'
 import { EMAIL_VARIABLES } from '@/lib/email/variables'
 import { SEGMENT_FIELDS, SEGMENT_OPERATORS } from '@/lib/domain/segment-query'
-import { metadataServerFns } from '@/server/contacts'
+import { metadataServerFns } from '@/rpc/contacts'
 import { useServerQuery } from '@/lib/use-server-query'
 
 export const Route = createFileRoute('/app/integrations')({

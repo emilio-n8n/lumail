@@ -5,9 +5,9 @@ import { Card, CardHeader } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Field, Input, Select } from '@/components/ui/input'
 import { useToast } from '@/components/ui/toast'
-import { segmentServerFns, metadataServerFns } from '@/server/contacts'
+import { segmentServerFns, metadataServerFns } from '@/rpc/contacts'
 import { useServerQuery } from '@/lib/use-server-query'
-import { campaignServerFns } from '@/server/campaigns'
+import { campaignServerFns } from '@/rpc/campaigns'
 import { cn, formatNumber } from '@/lib/utils'
 import type {
   SegmentCondition,

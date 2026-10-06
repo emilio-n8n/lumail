@@ -64,6 +64,24 @@ export type Database = {
           },
         ]
       }
+      app_private_settings: {
+        Row: {
+          created_at: string
+          key: string
+          value: string
+        }
+        Insert: {
+          created_at?: string
+          key: string
+          value: string
+        }
+        Update: {
+          created_at?: string
+          key?: string
+          value?: string
+        }
+        Relationships: []
+      }
       campaign_recipients: {
         Row: {
           campaign_id: string
@@ -1371,6 +1389,7 @@ export type Database = {
         }
         Returns: Json
       }
+      wake_job_runner_now: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "owner" | "admin" | "member"

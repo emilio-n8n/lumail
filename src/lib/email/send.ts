@@ -57,7 +57,7 @@ export function getAppUrl(): string {
   return (
     process.env.APP_URL ??
     process.env.PUBLIC_APP_URL ??
-    'http://localhost:3000'
+    'https://project--acb833d5-fbcf-4f6f-aa44-688d9e5e9e11.lovable.app'
   ).replace(/\/$/, '')
 }
 

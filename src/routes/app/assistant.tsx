@@ -6,8 +6,8 @@ import { Badge, Card, CardHeader } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Kbd } from '@/components/ui/badge'
 import { useToast } from '@/components/ui/toast'
-import { assistantServerFns } from '@/server/assistant'
-import { metadataServerFns } from '@/server/contacts'
+import { assistantServerFns } from '@/rpc/assistant'
+import { metadataServerFns } from '@/rpc/contacts'
 import { useServerQuery } from '@/lib/use-server-query'
 import { cn } from '@/lib/utils'
 
@@ -253,8 +253,8 @@ function AssistantPage() {
             <CardHeader title="How it works" />
             <div className="space-y-2 p-4 text-[12px] leading-relaxed text-muted-foreground">
               <p>
-                With <code className="font-mono">ANTHROPIC_API_KEY</code> set,
-                Claude drives the tools directly.
+                Lovable AI is connected, so
+                the model drives the tools directly.
               </p>
               <p>
                 Without a key, a deterministic router drives the very same

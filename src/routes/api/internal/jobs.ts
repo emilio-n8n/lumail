@@ -17,16 +17,17 @@ export const Route = createFileRoute('/api/internal/jobs')({
   server: {
     handlers: {
       GET: async () => {
-        const { ensureJobTicker } = await import('@/lib/jobs/ticker')
-        const { jobHealth } = await import('@/lib/jobs/runner')
+        const { jobHealth, runDueJobs } = await import('@/lib/jobs/runner')
 
-        ensureJobTicker()
+        // The dashboard pings this while it is open, which drains due jobs
+        // between scheduled runs.
+        await runDueJobs(25).catch((error) => console.error('[jobs]', error))
         const health = await jobHealth()
 
         return new Response(
           JSON.stringify({
             ok: true,
-            ticker: 'running',
+            ticker: 'scheduled',
             queue: health.counts,
             lastError: health.lastError,
           }),

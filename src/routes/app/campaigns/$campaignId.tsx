@@ -22,8 +22,8 @@ import { ActivityTimeline } from '@/components/app/activity'
 import { EmailEditor } from '@/components/editor/email-editor'
 import { ContactDrawer } from '@/components/app/contact-drawer'
 import { useToast } from '@/components/ui/toast'
-import { campaignServerFns } from '@/server/campaigns'
-import { segmentServerFns, activityServerFns } from '@/server/contacts'
+import { campaignServerFns } from '@/rpc/campaigns'
+import { segmentServerFns, activityServerFns } from '@/rpc/contacts'
 import {
   useServerQuery,
   useInvalidateServer,
