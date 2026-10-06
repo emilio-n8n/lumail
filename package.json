@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@ai-sdk/anthropic": "4.0.71",
+    "@ai-sdk/openai": "^4.0.83",
     "@hookform/resolvers": "^5.2.2",
     "@lovable.dev/cloud-auth-js": "^1.1.2",
     "@modelcontextprotocol/sdk": "1.32.0",
