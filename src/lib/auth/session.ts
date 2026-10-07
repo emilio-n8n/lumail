@@ -266,7 +266,11 @@ export async function establishSession(accessToken: string): Promise<AuthSession
     const slug = await uniqueSlug(tx, user.email)
     await tx.query(
       `with ws as (
-         insert into public.workspaces (name, slug) values ($1, $2) returning id
+         insert into public.workspaces (name, slug)
+         select $1, $2
+         where not exists (select 1 from public.memberships where user_id = $3)
+         on conflict (slug) do nothing
+         returning id
        )
        insert into public.memberships (workspace_id, user_id, role)
        select id, $3, 'owner' from ws`,
