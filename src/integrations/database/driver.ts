@@ -151,7 +151,13 @@ function stripLeadingComments(sql: string): string {
 
 function returnsRows(sql: string): boolean {
   const head = stripLeadingComments(sql)
-  if (/^(select|with|values|table)\b/i.test(head)) return true
+  if (/^with\b/i.test(head)) {
+    const split = mainStatementStart(head)
+    const main = split > 0 ? head.slice(split).trim() : ''
+    if (/^(insert|update|delete|merge)\b/i.test(main)) return /\breturning\b/i.test(main)
+    return true
+  }
+  if (/^(select|values|table)\b/i.test(head)) return true
   return /\breturning\b/i.test(sql)
 }
 
