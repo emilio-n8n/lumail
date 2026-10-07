@@ -155,6 +155,70 @@ function returnsRows(sql: string): boolean {
   return /\breturning\b/i.test(sql)
 }
 
+/**
+ * Index just past the CTE list of a statement that starts with WITH, i.e. the
+ * start of its main statement. Skips quoted strings and comments.
+ */
+function mainStatementStart(sql: string): number {
+  let depth = 0
+  let sawParen = false
+  for (let i = 0; i < sql.length; i++) {
+    const ch = sql[i]
+    if (ch === "'" || ch === '"') {
+      const quote = ch
+      i++
+      while (i < sql.length) {
+        if (sql[i] === quote) {
+          if (sql[i + 1] === quote) i++
+          else break
+        }
+        i++
+      }
+      continue
+    }
+    if (ch === '-' && sql[i + 1] === '-') {
+      while (i < sql.length && sql[i] !== '\n') i++
+      continue
+    }
+    if (ch === '/' && sql[i + 1] === '*') {
+      i = sql.indexOf('*/', i + 2) + 1
+      if (i <= 0) return -1
+      continue
+    }
+    if (ch === '(') {
+      depth++
+      sawParen = true
+    } else if (ch === ')') {
+      depth--
+      if (depth === 0 && sawParen) {
+        const rest = sql.slice(i + 1)
+        const next = rest.match(/^\s*(\S)/)
+        if (next && next[1] !== ',') return i + 1
+      }
+    }
+  }
+  return -1
+}
+
+/**
+ * Wraps a row-returning statement so the database returns it as one JSON
+ * array. Data-modifying CTEs must sit at the top level, so a statement that
+ * already starts with WITH gets the wrapper appended to its own CTE list.
+ */
+function wrapForRows(sql: string): string {
+  const body = sql.trim().replace(/;\s*$/, '')
+  const tail =
+    " select coalesce(jsonb_agg(to_jsonb(__lumail_q)), '[]'::jsonb) as rows, count(*) as n from __lumail_q"
+  const head = stripLeadingComments(body)
+  if (/^with\b/i.test(head)) {
+    const split = mainStatementStart(body)
+    if (split > 0) {
+      return `${body.slice(0, split)}, __lumail_q as (${body.slice(split)})${tail}`
+    }
+  }
+  return `with __lumail_q as (${body})${tail}`
+}
+
 /* -------------------------------------------------------------- transport */
 
 async function callExec(
@@ -179,7 +243,7 @@ async function callExec(
     body: JSON.stringify({
       p_role: role,
       p_claims: claims,
-      p_sql: sql,
+      p_sql: wantsRows ? wrapForRows(sql) : sql,
       p_returns: wantsRows,
     }),
   })
